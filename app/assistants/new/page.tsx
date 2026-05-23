@@ -1,65 +1,87 @@
+import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
+import Button from "@/components/Button";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
-async function createAssistant(formData:FormData) {
-"use server";
-const name = formData.get("name") as string;
-const instruction = formData.get("instruction") as string;
+async function createAssistant(formData: FormData) {
+  "use server";
+
+  const name = formData.get("name") as string;
+  const instruction = formData.get("instruction") as string;
 
   await prisma.assistant.create({
-      data:{
-        name: name,
-        instruction: instruction,
-      },
-    });
+    data: {
+      name: name,
+      instruction: instruction,
+    },
+  });
 
-    redirect("/");
-
-  }
+  redirect("/");
+}
 
 export default function NewAssistantPage() {
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">Создать ассистента</h1>
+    <main className="min-h-screen">
+      <AppHeader />
 
-      <p className="mt-2 text-gray-400">
-        Здесь ты сможешь добавить нового ИИ-ассистента.
-      </p>
-
-      <form action={createAssistant} className="mt-8 max-w-xl space-y-4">
-        <div>
-          <label className="block text-sm font-medium">
-            Имя ассистента
-          </label>
-
-          <input
-            name="name"
-            className="mt-1 w-full rounded border border-gray-400 px-3 py-2 text-black"
-            type="text"
-            placeholder="Например: Fitness Coach"
-          />
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-7">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">
+            New assistant
+          </p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            Создать ассистента
+          </h1>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+            Задай имя и инструкцию. После сохранения ассистент появится на
+            главной странице и будет доступен для чата.
+          </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium">
-            Инструкция
-          </label>
-
-          <textarea
-            name="instruction"
-            className="mt-1 w-full rounded border border-gray-400 px-3 py-2 text-black"
-            placeholder="Например: Помогай мне составлять тренировки"
-            rows={5}
-          />
-        </div>
-
-        <button
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          type="submit"
+        <form
+          action={createAssistant}
+          className="rounded-3xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-300/45 sm:p-8"
         >
-          Сохранить ассистента
-        </button>
-      </form>
+          <div className="grid gap-5">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                Имя ассистента
+              </span>
+              <input
+                name="name"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
+                type="text"
+                placeholder="Например: Fitness Coach"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                Инструкция
+              </span>
+              <textarea
+                name="instruction"
+                className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
+                placeholder="Например: Помогай мне составлять тренировки"
+                rows={7}
+                required
+              />
+            </label>
+          </div>
+
+          <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Link
+              href="/"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-300/40 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+            >
+              Отмена
+            </Link>
+            <Button type="submit">Сохранить ассистента</Button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import AppHeader from "@/components/AppHeader";
 import ChatWindow from "@/components/ChatWindow";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -18,16 +19,16 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   const assistant = await prisma.assistant.findUnique({
-  where: {
-    id: assistantId,
-  },
-  include: {
-    messages: {
-      orderBy: {
-        createdAt: "asc",
+    where: {
+      id: assistantId,
+    },
+    include: {
+      messages: {
+        orderBy: {
+          createdAt: "asc",
+        },
       },
     },
-  },
   });
 
   if (!assistant) {
@@ -35,12 +36,10 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">{assistant.name}</h1>
+    <main className="min-h-screen bg-[#eef1f4]">
+      <AppHeader />
 
-      <p className="mt-2 text-gray-400">{assistant.instruction}</p>
-
-      <div className="mt-8">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <ChatWindow
           assistantId={assistant.id}
           assistantName={assistant.name}

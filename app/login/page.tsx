@@ -1,4 +1,5 @@
 import { scryptSync, timingSafeEqual } from "crypto";
+import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -57,40 +58,66 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <form
-        action={login}
-        className="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-gray-700 p-6"
-      >
-        <h1 className="text-2xl font-bold">Страница входа</h1>
+    <main className="min-h-screen">
+      <AppHeader />
 
-        <label className="flex flex-col gap-2">
-          Email
-          <input
-            name="email"
-            className="rounded border border-gray-400 px-2 py-1 text-black"
-            type="email"
-            placeholder="admin@test.com"
-            defaultValue={params.email || ""}
-          />
-        </label>
+      <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <form
+          action={login}
+          className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-400/20 sm:p-8"
+        >
+          <div className="mb-7">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">
+              Login
+            </p>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+              Вход в аккаунт
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              Введи email и пароль, чтобы перейти к рабочему пространству.
+            </p>
+          </div>
 
-        <label className="flex flex-col gap-2">
-          Пароль
-          <input
-            name="password"
-            className="rounded border border-gray-400 px-2 py-1 text-black"
-            type="password"
-            placeholder="123"
-          />
-        </label>
+          <div className="grid gap-4">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                Email
+              </span>
+              <input
+                name="email"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
+                type="email"
+                placeholder="admin@test.com"
+                defaultValue={params.email || ""}
+                required
+              />
+            </label>
 
-        {params.error && (
-          <p className="text-sm text-red-500">Неверный email или пароль</p>
-        )}
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                Пароль
+              </span>
+              <input
+                name="password"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
+                type="password"
+                placeholder="Введите пароль"
+                required
+              />
+            </label>
+          </div>
 
-        <Button>Войти</Button>
-      </form>
+          {params.error && (
+            <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+              Неверный email или пароль.
+            </p>
+          )}
+
+          <Button className="mt-6 w-full" type="submit">
+            Войти
+          </Button>
+        </form>
+      </div>
     </main>
   );
 }
