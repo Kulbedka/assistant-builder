@@ -1,12 +1,28 @@
 import AppHeader from "@/components/AppHeader";
 import ChatWindow from "@/components/ChatWindow";
-import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 type ChatPageProps = {
   params: Promise<{
     id: string;
   }>;
+};
+
+type AssistantMessage = {
+  id: number;
+  role: string;
+  text: string;
+  createdAt: string;
+  assistantId: number;
+};
+
+type Assistant = {
+  id: number;
+  name: string;
+  instruction: string;
+  messages: AssistantMessage[];
 };
 
 export default async function ChatPage({ params }: ChatPageProps) {
@@ -18,22 +34,19 @@ export default async function ChatPage({ params }: ChatPageProps) {
     notFound();
   }
 
-  const assistant = await prisma.assistant.findUnique({
-    where: {
-      id: assistantId,
-    },
-    include: {
-      messages: {
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-    },
+  const response = await fetch(`${API_URL}/api/assistants/${assistantId}`, {
+    cache: "no-store",
   });
 
-  if (!assistant) {
+  if (response.status === 404) {
     notFound();
   }
+
+  if (!response.ok) {
+    throw new Error("Failed to load assistant");
+  }
+
+  const assistant: Assistant = await response.json();
 
   return (
     <main className="min-h-screen bg-[#eef1f4]">
