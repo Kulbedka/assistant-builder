@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 type ChatWindowProps = {
   assistantId: number;
@@ -55,7 +56,7 @@ export default function ChatWindow({
 
     setMessage("");
 
-    await fetch("/api/messages", {
+  await fetch(`${API_URL}/api/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,8 +67,7 @@ export default function ChatWindow({
         text: userMessage.text,
       }),
     });
-
-    await fetch("/api/messages", {
+  await fetch(`${API_URL}/api/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
