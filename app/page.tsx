@@ -1,10 +1,25 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
-import { prisma } from "@/lib/prisma";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+type Assistant = {
+  id: number;
+  name: string;
+  instruction: string;
+};
 
 export default async function HomePage() {
-  const assistants = await prisma.assistant.findMany();
+  const response = await fetch(`${API_URL}/api/assistants`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load assistants");
+  }
+
+  const assistants: Assistant[] = await response.json();
 
   return (
     <main className="min-h-screen">
@@ -56,7 +71,7 @@ export default async function HomePage() {
                 </p>
                 <p className="mt-3 text-2xl font-bold text-teal-900">Live</p>
                 <p className="mt-2 text-sm leading-6 text-teal-800/80">
-                  Данные загружаются через текущий Prisma/Supabase слой.
+                  Данные загружаются через Express API.
                 </p>
               </div>
             </div>
