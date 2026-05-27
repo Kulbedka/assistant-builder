@@ -1,21 +1,34 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 async function createAssistant(formData: FormData) {
   "use server";
 
-  const name = formData.get("name") as string;
-  const instruction = formData.get("instruction") as string;
+  const name = String(formData.get("name") || "").trim();
+  const instruction = String(formData.get("instruction") || "").trim();
 
-  await prisma.assistant.create({
-    data: {
-      name: name,
-      instruction: instruction,
+  if (!name || !instruction) {
+    throw new Error("Name and instruction are required");
+  }
+
+  const response = await fetch(`${API_URL}/api/assistants`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      name,
+      instruction,
+    }),
   });
+
+  if (!response.ok) {
+    throw new Error("Failed to create assistant");
+  }
 
   redirect("/");
 }
