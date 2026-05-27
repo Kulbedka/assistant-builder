@@ -2,7 +2,11 @@ import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://185-117-116-100.sslip.io"
+    : "http://localhost:4000");
 
 type Assistant = {
   id: number;
