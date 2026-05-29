@@ -1,9 +1,10 @@
-import { scryptSync, timingSafeEqual } from "crypto";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -12,43 +13,45 @@ type LoginPageProps = {
   }>;
 };
 
-function verifyPassword(password: string, storedPasswordHash: string) {
-  const [salt, storedHash] = storedPasswordHash.split(":");
-
-  const hash = scryptSync(password, salt, 64);
-
-  const storedHashBuffer = Buffer.from(storedHash, "hex");
-
-  return timingSafeEqual(hash, storedHashBuffer);
-}
-
 async function login(formData: FormData) {
   "use server";
 
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  const email = String(formData.get("email") || "");
+  const password = String(formData.get("password") || "");
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
+  const response = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
   });
 
-  if (!user) {
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+
+    if (data?.error === "Please verify your email before logging in") {
+      redirect(`/login?error=verify&email=${encodeURIComponent(email)}`);
+    }
+
     redirect(`/login?error=1&email=${encodeURIComponent(email)}`);
   }
 
-  const isPasswordCorrect = verifyPassword(password, user.passwordHash);
-
-  if (!isPasswordCorrect) {
-    redirect(`/login?error=1&email=${encodeURIComponent(email)}`);
-  }
+  const data = (await response.json()) as {
+    token: string;
+  };
 
   const cookieStore = await cookies();
 
-  cookieStore.set("isLoggedIn", "true", {
+  cookieStore.set("authToken", data.token, {
     httpOnly: true,
     path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 7,
   });
 
   redirect("/");
@@ -87,7 +90,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 name="email"
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
                 type="email"
-                placeholder="admin@test.com"
+                placeholder="test-auth@example.com"
                 defaultValue={params.email || ""}
                 required
               />
@@ -109,7 +112,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           {params.error && (
             <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
-              Неверный email или пароль.
+              {params.error === "verify"
+                ? "Сначала подтверди email, потом войди."
+                : "Неверный email или пароль."}
             </p>
           )}
 
