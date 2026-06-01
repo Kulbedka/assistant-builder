@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoutButton from "./LogoutButton";
 
 export default function AppHeader() {
   return (
@@ -26,12 +27,15 @@ export default function AppHeader() {
           >
             Dashboard
           </Link>
+
           <Link
             href="/assistants/new"
             className="inline-flex min-h-10 items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
           >
             New assistant
           </Link>
+
+          <LogoutButton />
         </nav>
       </div>
     </header>
