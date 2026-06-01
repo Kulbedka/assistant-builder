@@ -1,3 +1,4 @@
+import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import { redirect } from "next/navigation";
@@ -121,6 +122,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <Button className="mt-6 w-full" type="submit">
             Войти
           </Button>
+
+          <p className="mt-5 text-center text-sm text-slate-600">
+            Нет аккаунта?{" "}
+            <Link
+              href="/register"
+              className="font-semibold text-teal-700 hover:text-teal-800"
+            >
+              Зарегистрироваться
+            </Link>
+          </p>
         </form>
       </div>
     </main>
