@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import { redirect } from "next/navigation";
@@ -8,6 +9,26 @@ const API_URL =
   (process.env.NODE_ENV === "production"
     ? "https://185-117-116-100.sslip.io"
     : "http://localhost:4000");
+
+async function requireUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("authToken")?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  const response = await fetch(`${API_URL}/api/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    redirect("/login");
+  }
+}
 
 async function createAssistant(formData: FormData) {
   "use server";
@@ -37,7 +58,9 @@ async function createAssistant(formData: FormData) {
   redirect("/");
 }
 
-export default function NewAssistantPage() {
+export default async function NewAssistantPage() {
+  await requireUser();
+
   return (
     <main className="min-h-screen">
       <AppHeader />

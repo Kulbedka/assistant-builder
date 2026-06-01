@@ -1,6 +1,7 @@
+import { cookies } from "next/headers";
 import AppHeader from "@/components/AppHeader";
 import ChatWindow from "@/components/ChatWindow";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -29,7 +30,29 @@ type Assistant = {
   messages: AssistantMessage[];
 };
 
+async function requireUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("authToken")?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  const response = await fetch(`${API_URL}/api/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    redirect("/login");
+  }
+}
+
 export default async function ChatPage({ params }: ChatPageProps) {
+  await requireUser();
+
   const { id } = await params;
 
   const assistantId = Number(id);

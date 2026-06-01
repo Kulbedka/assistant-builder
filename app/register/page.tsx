@@ -2,35 +2,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
+      const normalizedEmail = email.toLowerCase().trim();
+
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: normalizedEmail,
           password,
-          name,
         }),
       });
 
@@ -41,13 +42,7 @@ export default function RegisterPage() {
         return;
       }
 
-      setSuccess(
-        "Account created. Please check your email and confirm your address before login."
-      );
-
-      setEmail("");
-      setPassword("");
-      setName("");
+      router.push(`/verify-email?email=${encodeURIComponent(normalizedEmail)}`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -58,27 +53,13 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-[#eef1f4] flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg border border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Create account
-        </h1>
+        <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
 
         <p className="mt-2 text-sm text-slate-600">
           Register your Assistant Builder account.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700">
-              Name
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-teal-500"
-              placeholder="Anton"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-slate-700">
               Email
@@ -110,12 +91,6 @@ export default function RegisterPage() {
           {error && (
             <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
-            </p>
-          )}
-
-          {success && (
-            <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              {success}
             </p>
           )}
 

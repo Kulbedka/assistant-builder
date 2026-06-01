@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
 
@@ -14,7 +16,29 @@ type Assistant = {
   instruction: string;
 };
 
+async function requireUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("authToken")?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  const response = await fetch(`${API_URL}/api/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    redirect("/login");
+  }
+}
+
 export default async function HomePage() {
+  await requireUser();
+
   const response = await fetch(`${API_URL}/api/assistants`, {
     cache: "no-store",
   });
@@ -47,15 +71,9 @@ export default async function HomePage() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/assistants/new"
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-700"
                 >
                   Создать ассистента
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-300/40 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
-                >
-                  Страница входа
                 </Link>
               </div>
             </div>
@@ -83,32 +101,18 @@ export default async function HomePage() {
         </section>
 
         <section className="mt-10">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950">
-                Мои ассистенты
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Выбери ассистента, чтобы продолжить диалог.
-              </p>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+            Мои ассистенты
+          </h2>
 
           {assistants.length === 0 ? (
             <div className="mt-5 rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-md shadow-slate-300/35">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-xl font-bold text-teal-700">
-                +
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-950">
+              <h3 className="text-lg font-semibold text-slate-950">
                 Ассистентов пока нет
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                Создай первого ассистента, и он появится здесь после сохранения
-                в базе данных.
-              </p>
               <Link
                 href="/assistants/new"
-                className="mt-6 inline-flex min-h-10 items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-teal-900/10 transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                className="mt-6 inline-flex min-h-10 items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white"
               >
                 Создать ассистента
               </Link>
