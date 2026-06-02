@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
+    process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://185-117-116-100.sslip.io"
+    : "http://localhost:4000");
 
 export default function RegisterPage() {
   const router = useRouter();
