@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
 import AppHeader from "@/components/AppHeader";
+import AuthGuard from "@/components/AuthGuard";
 import ChatWindow from "@/components/ChatWindow";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -30,28 +30,7 @@ type Assistant = {
   messages: AssistantMessage[];
 };
 
-async function requireUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("authToken")?.value;
-
-  if (!token) {
-    redirect("/login");
-  }
-
-  const response = await fetch(`${API_URL}/api/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    redirect("/login");
-  }
-}
-
 export default async function ChatPage({ params }: ChatPageProps) {
-  await requireUser();
 
   const { id } = await params;
 
@@ -76,20 +55,22 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const assistant: Assistant = await response.json();
 
   return (
-    <main className="min-h-screen bg-[#eef1f4]">
-      <AppHeader />
+    <AuthGuard>
+      <main className="min-h-screen bg-[#eef1f4]">
+        <AppHeader />
 
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <ChatWindow
-          assistantId={assistant.id}
-          assistantName={assistant.name}
-          assistantInstruction={assistant.instruction}
-          initialMessages={assistant.messages.map((message) => ({
-            role: message.role === "assistant" ? "assistant" : "user",
-            text: message.text,
-          }))}
-        />
-      </div>
-    </main>
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <ChatWindow
+            assistantId={assistant.id}
+            assistantName={assistant.name}
+            assistantInstruction={assistant.instruction}
+            initialMessages={assistant.messages.map((message) => ({
+              role: message.role === "assistant" ? "assistant" : "user",
+              text: message.text,
+           }))}
+          />
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

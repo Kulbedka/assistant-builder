@@ -1,36 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import LogoutButton from "./LogoutButton";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
 
-async function getCurrentUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("authToken")?.value;
+type CurrentUser = {
+  id: number;
+  email: string;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt?: string;
+};
 
-  if (!token) {
-    return null;
-  }
+export default function AppHeader() {
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const response = await fetch(`${API_URL}/api/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
+  useEffect(() => {
+    async function loadCurrentUser() {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          credentials: "include",
+          cache: "no-store",
+        });
 
-  if (!response.ok) {
-    return null;
-  }
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
 
-  const data = await response.json();
+        const data = await response.json();
+        setUser(data.user);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  return data.user;
-}
-
-export default async function AppHeader() {
-  const user = await getCurrentUser();
+    loadCurrentUser();
+  }, []);
 
   return (
     <header className="border-b border-slate-200 bg-white/95 shadow-sm shadow-slate-300/50 backdrop-blur">
@@ -48,7 +60,7 @@ export default async function AppHeader() {
         </Link>
 
         <nav className="flex flex-wrap items-center gap-2">
-          {user ? (
+          {isLoading ? null : user ? (
             <>
               <Link
                 href="/"
