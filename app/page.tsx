@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
@@ -19,6 +20,7 @@ type Assistant = {
 };
 
 export default function HomePage() {
+  const router = useRouter();
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -30,14 +32,19 @@ export default function HomePage() {
           credentials: "include",
         });
 
+        if (response.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
         if (!response.ok) {
-          throw new Error("Failed to load assistants");
+          setError("Не удалось загрузить ассистентов");
+          return;
         }
 
         const data: Assistant[] = await response.json();
         setAssistants(data);
-      } catch (error) {
-        console.error(error);
+      } catch {
         setError("Не удалось загрузить ассистентов");
       } finally {
         setIsLoading(false);
@@ -45,7 +52,7 @@ export default function HomePage() {
     }
 
     loadAssistants();
-  }, []);
+  }, [router]);
 
   return (
     <AuthGuard>
