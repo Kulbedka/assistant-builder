@@ -4,9 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
+import { loginUser } from "@/lib/api/auth";
 
 type LoginFormProps = {
   error?: string;
@@ -27,24 +25,12 @@ export default function LoginForm({ error, email: initialEmail = "" }: LoginForm
 
     setIsLoading(true);
 
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    const result = await loginUser(email, password);
 
     setIsLoading(false);
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-
-      if (data?.error === "Please verify your email before logging in") {
+    if (!result.success) {
+      if (result.error === "Please verify your email before logging in") {
         router.push(`/login?error=verify&email=${encodeURIComponent(email)}`);
         return;
       }

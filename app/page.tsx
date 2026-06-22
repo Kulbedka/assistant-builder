@@ -96,15 +96,6 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-teal-100 bg-teal-50 p-5 shadow-sm shadow-teal-900/5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-700">
-                    Status
-                  </p>
-                  <p className="mt-3 text-2xl font-bold text-teal-900">Live</p>
-                  <p className="mt-2 text-sm leading-6 text-teal-800/80">
-                    Данные загружаются через Express API.
-                  </p>
-                </div>
               </div>
             </div>
           </section>

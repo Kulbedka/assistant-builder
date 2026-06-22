@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
+import { getCurrentUser } from "@/lib/api/auth";
 
 type AuthGuardProps = {
   children: React.ReactNode;
@@ -18,12 +16,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          credentials: "include",
-          cache: "no-store",
-        });
+        const user = await getCurrentUser();
 
-        if (!response.ok) {
+        if (!user) {
           router.replace("/login");
           return;
         }

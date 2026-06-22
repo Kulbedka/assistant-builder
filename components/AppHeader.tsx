@@ -3,17 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
-
-type CurrentUser = {
-  id: number;
-  email: string;
-  emailVerified: boolean;
-  createdAt: string;
-  updatedAt?: string;
-};
+import { getCurrentUser, type CurrentUser } from "@/lib/api/auth";
 
 export default function AppHeader() {
   const [user, setUser] = useState<CurrentUser | null>(null);
@@ -22,18 +12,8 @@ export default function AppHeader() {
   useEffect(() => {
     async function loadCurrentUser() {
       try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          setUser(null);
-          return;
-        }
-
-        const data = await response.json();
-        setUser(data.user);
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
       } catch {
         setUser(null);
       } finally {
