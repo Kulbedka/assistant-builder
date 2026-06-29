@@ -298,40 +298,32 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
                               : "min-w-56 rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50"
                           }
                           key={chat.id}
-                          onClick={() => setActiveChatId(chat.id)}
-                          role="button"
-                          tabIndex={0}
                         >
-                          <span className="block truncate">
+                          <button
+                            className="block w-full truncate text-left"
+                            onClick={() => setActiveChatId(chat.id)}
+                            type="button"
+                          >
                             {formatChatTitle(chat)}
-                          </span>
+                          </button>
                           <span className="mt-3 flex flex-wrap gap-1">
                             <button
                               className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:border-teal-200 hover:text-teal-700"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRenameChat(chat);
-                              }}
+                              onClick={() => handleRenameChat(chat)}
                               type="button"
                             >
                               Rename
                             </button>
                             <button
                               className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:border-teal-200 hover:text-teal-700"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleDuplicateChat(chat);
-                              }}
+                              onClick={() => handleDuplicateChat(chat)}
                               type="button"
                             >
                               Duplicate
                             </button>
                             <button
                               className="rounded-lg border border-red-100 bg-white px-2 py-1 text-xs font-medium text-red-600 hover:border-red-200 hover:bg-red-50"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleDeleteChat(chat);
-                              }}
+                              onClick={() => handleDeleteChat(chat)}
                               type="button"
                             >
                               Delete
