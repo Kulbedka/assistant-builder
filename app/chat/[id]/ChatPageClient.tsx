@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import AuthGuard from "@/components/AuthGuard";
 import ChatWindow from "@/components/ChatWindow";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://185-117-116-100.sslip.io"
-    : "http://localhost:4000");
+import {
+  getAssistantById,
+  type Assistant as ApiAssistant,
+} from "@/lib/api/assistants";
 
 type AssistantMessage = {
   id: number;
@@ -19,11 +18,8 @@ type AssistantMessage = {
   assistantId: number;
 };
 
-type Assistant = {
-  id: number;
-  name: string;
-  instruction: string;
-  messages: AssistantMessage[];
+type Assistant = ApiAssistant & {
+  messages?: AssistantMessage[];
 };
 
 type ChatPageClientProps = {
@@ -31,6 +27,7 @@ type ChatPageClientProps = {
 };
 
 export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
+  const router = useRouter();
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -44,27 +41,24 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
       }
 
       try {
-        const response = await fetch(`${API_URL}/api/assistants/${assistantId}`, {
-          credentials: "include",
-        });
+        const result = await getAssistantById(assistantId);
 
-        if (response.status === 404) {
-          setErrorMessage("Ассистент не найден");
-          return;
-        }
+        if (!result.success) {
+          if (result.status === 404) {
+            setErrorMessage("Ассистент не найден");
+            return;
+          }
 
-        if (response.status === 401) {
-          setErrorMessage("Нужно войти в аккаунт");
-          return;
-        }
+          if (result.status === 401) {
+            router.replace("/login");
+            return;
+          }
 
-        if (!response.ok) {
           setErrorMessage("Не удалось загрузить ассистента");
           return;
         }
 
-        const data: Assistant = await response.json();
-        setAssistant(data);
+        setAssistant(result.data);
       } catch {
         setErrorMessage("Ошибка соединения с сервером");
       } finally {
@@ -73,7 +67,7 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
     }
 
     loadAssistant();
-  }, [assistantId]);
+  }, [assistantId, router]);
 
   return (
     <AuthGuard>
@@ -101,7 +95,7 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
               assistantId={assistant.id}
               assistantName={assistant.name}
               assistantInstruction={assistant.instruction}
-              initialMessages={assistant.messages.map((message) => ({
+              initialMessages={(assistant.messages ?? []).map((message) => ({
                 role: message.role === "assistant" ? "assistant" : "user",
                 text: message.text,
               }))}

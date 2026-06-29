@@ -6,12 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://185-117-116-100.sslip.io"
-    : "http://localhost:4000");
+import { createAssistant as createAssistantRequest } from "@/lib/api/assistants";
 
 export default function NewAssistantPage() {
   const router = useRouter();
@@ -36,20 +31,19 @@ export default function NewAssistantPage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/assistants`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          name,
-          instruction,
-        }),
+      const result = await createAssistantRequest({
+        name,
+        instruction,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create assistant");
+      if (!result.success) {
+        if (result.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        setError("Не удалось создать ассистента");
+        return;
       }
 
       router.push("/");

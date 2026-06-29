@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/Button";
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://185-117-116-100.sslip.io"
-    : "http://localhost:4000");
+import { createMessage } from "@/lib/api/messages";
 
 type ChatWindowProps = {
   assistantId: number;
@@ -60,27 +56,16 @@ export default function ChatWindow({
 
     setMessage("");
 
-  await fetch(`${API_URL}/api/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        assistantId,
-        role: userMessage.role,
-        text: userMessage.text,
-      }),
+    await createMessage({
+      assistantId,
+      role: userMessage.role,
+      text: userMessage.text,
     });
-  await fetch(`${API_URL}/api/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        assistantId,
-        role: assistantMessage.role,
-        text: assistantMessage.text,
-      }),
+
+    await createMessage({
+      assistantId,
+      role: assistantMessage.role,
+      text: assistantMessage.text,
     });
   }
 
