@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { createMessage } from "@/lib/api/messages";
 
 type ChatWindowProps = {
   assistantId: number;
+  chatId?: number;
   assistantName?: string;
   assistantInstruction?: string;
   initialMessages?: ChatMessage[];
@@ -24,17 +25,30 @@ const suggestions = [
 
 export default function ChatWindow({
   assistantId,
+  chatId,
   assistantName = "Ассистент",
   assistantInstruction = "Пока инструкции нет.",
   initialMessages = [],
 }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setMessages(initialMessages);
+    setMessage("");
+    setError("");
+  }, [chatId, initialMessages]);
 
   async function handleSendMessage() {
     const text = message.trim();
 
     if (text === "") {
+      return;
+    }
+
+    if (!chatId) {
+      setError("Сначала создайте или выберите чат");
       return;
     }
 
@@ -48,6 +62,7 @@ export default function ChatWindow({
       text: `Я получил твое сообщение. Моя инструкция: ${assistantInstruction}`,
     };
 
+    setError("");
     setMessages((prevMessages) => [
       ...prevMessages,
       userMessage,
@@ -56,17 +71,23 @@ export default function ChatWindow({
 
     setMessage("");
 
-    await createMessage({
+    const userResult = await createMessage({
       assistantId,
+      chatId,
       role: userMessage.role,
       text: userMessage.text,
     });
 
-    await createMessage({
+    const assistantResult = await createMessage({
       assistantId,
+      chatId,
       role: assistantMessage.role,
       text: assistantMessage.text,
     });
+
+    if (!userResult.success || !assistantResult.success) {
+      setError("Не удалось сохранить сообщение");
+    }
   }
 
   return (
@@ -194,6 +215,12 @@ export default function ChatWindow({
         </div>
 
         <footer className="border-t border-slate-100 bg-white p-4 sm:p-5">
+          {error && (
+            <p className="mx-auto mb-3 max-w-3xl text-sm font-medium text-red-600">
+              {error}
+            </p>
+          )}
+
           <div className="mx-auto flex max-w-3xl gap-3">
             <textarea
               className="min-h-12 flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-100"
@@ -211,7 +238,7 @@ export default function ChatWindow({
 
             <Button
               className="h-12 shrink-0 px-5"
-              disabled={message.trim() === ""}
+              disabled={message.trim() === "" || !chatId}
               onClick={handleSendMessage}
               type="button"
             >

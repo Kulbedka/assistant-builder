@@ -2,6 +2,7 @@ import { apiFetch } from "./client";
 
 export type CreateMessageInput = {
   assistantId: number;
+  chatId?: number;
   role: "user" | "assistant";
   text: string;
 };
@@ -9,6 +10,7 @@ export type CreateMessageInput = {
 export type Message = {
   id: number;
   assistantId: number;
+  chatId?: number | null;
   role: string;
   text: string;
   createdAt?: string;
