@@ -49,6 +49,11 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [chatError, setChatError] = useState("");
+  const [renamingChatId, setRenamingChatId] = useState<number | null>(null);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [confirmingDeleteChatId, setConfirmingDeleteChatId] = useState<
+    number | null
+  >(null);
 
   const activeChat = useMemo(
     () => chats.find((chat) => chat.id === activeChatId) ?? null,
@@ -133,9 +138,14 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
     }
   }
 
+  function startRenameChat(chat: Chat) {
+    setRenamingChatId(chat.id);
+    setRenameTitle(formatChatTitle(chat));
+    setConfirmingDeleteChatId(null);
+  }
+
   async function handleRenameChat(chat: Chat) {
-    const title = window.prompt("Новое название чата", formatChatTitle(chat));
-    const normalizedTitle = title?.trim();
+    const normalizedTitle = renameTitle.trim();
 
     if (!normalizedTitle) {
       return;
@@ -161,17 +171,17 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
           currentChat.id === chat.id ? result.data : currentChat,
         ),
       );
+      setRenamingChatId(null);
+      setRenameTitle("");
     } catch {
       setChatError("Ошибка соединения с сервером");
     }
   }
 
   async function handleDeleteChat(chat: Chat) {
-    const shouldDelete = window.confirm(
-      `Удалить чат “${formatChatTitle(chat)}”?`,
-    );
-
-    if (!shouldDelete) {
+    if (confirmingDeleteChatId !== chat.id) {
+      setConfirmingDeleteChatId(chat.id);
+      setRenamingChatId(null);
       return;
     }
 
@@ -201,6 +211,7 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
 
         return nextChats;
       });
+      setConfirmingDeleteChatId(null);
     } catch {
       setChatError("Ошибка соединения с сервером");
     }
@@ -309,7 +320,7 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
                           <span className="mt-3 flex flex-wrap gap-1">
                             <button
                               className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:border-teal-200 hover:text-teal-700"
-                              onClick={() => handleRenameChat(chat)}
+                              onClick={() => startRenameChat(chat)}
                               type="button"
                             >
                               Rename
@@ -326,9 +337,39 @@ export default function ChatPageClient({ assistantId }: ChatPageClientProps) {
                               onClick={() => handleDeleteChat(chat)}
                               type="button"
                             >
-                              Delete
+                              {confirmingDeleteChatId === chat.id
+                                ? "Confirm"
+                                : "Delete"}
                             </button>
                           </span>
+                          {renamingChatId === chat.id && (
+                            <div className="mt-3 flex gap-2">
+                              <input
+                                className="min-w-0 flex-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-800 outline-none focus:border-teal-500"
+                                onChange={(event) =>
+                                  setRenameTitle(event.target.value)
+                                }
+                                value={renameTitle}
+                              />
+                              <button
+                                className="rounded-lg bg-teal-600 px-2 py-1 text-xs font-semibold text-white hover:bg-teal-700"
+                                onClick={() => handleRenameChat(chat)}
+                                type="button"
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                                onClick={() => {
+                                  setRenamingChatId(null);
+                                  setRenameTitle("");
+                                }}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
