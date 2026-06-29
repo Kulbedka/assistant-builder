@@ -6,18 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://185-117-116-100.sslip.io"
-    : "http://localhost:4000");
-
-type Assistant = {
-  id: number;
-  name: string;
-  instruction: string;
-};
+import { getAssistants, type Assistant } from "@/lib/api/assistants";
 
 export default function HomePage() {
   const router = useRouter();
@@ -28,22 +17,19 @@ export default function HomePage() {
   useEffect(() => {
     async function loadAssistants() {
       try {
-        const response = await fetch(`${API_URL}/api/assistants`, {
-          credentials: "include",
-        });
+        const result = await getAssistants();
 
-        if (response.status === 401) {
-          router.replace("/login");
-          return;
-        }
+        if (!result.success) {
+          if (result.status === 401) {
+            router.replace("/login");
+            return;
+          }
 
-        if (!response.ok) {
           setError("Не удалось загрузить ассистентов");
           return;
         }
 
-        const data: Assistant[] = await response.json();
-        setAssistants(data);
+        setAssistants(result.data);
       } catch {
         setError("Не удалось загрузить ассистентов");
       } finally {
@@ -95,7 +81,6 @@ export default function HomePage() {
                     ассистентов в базе
                   </p>
                 </div>
-
               </div>
             </div>
           </section>

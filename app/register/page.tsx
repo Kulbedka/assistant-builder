@@ -3,12 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const API_URL =
-    process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://185-117-116-100.sslip.io"
-    : "http://localhost:4000");
+import { registerUser } from "@/lib/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,21 +22,10 @@ export default function RegisterPage() {
     try {
       const normalizedEmail = email.toLowerCase().trim();
 
-      const res = await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: normalizedEmail,
-          password,
-        }),
-      });
+      const result = await registerUser(normalizedEmail, password);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
+      if (!result.success) {
+        setError(result.error || "Registration failed");
         return;
       }
 

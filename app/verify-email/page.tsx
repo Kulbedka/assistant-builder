@@ -1,7 +1,5 @@
 import { redirect } from "next/navigation";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://185-117-116-100.sslip.io";
+import { verifyEmailCodeRequest } from "@/lib/api/auth";
 
 type VerifyEmailPageProps = {
   searchParams: Promise<{
@@ -17,18 +15,9 @@ async function verifyEmailCode(formData: FormData) {
   const email = String(formData.get("email") || "");
   const code = String(formData.get("code") || "");
 
-  const response = await fetch(`${API_URL}/api/auth/verify-email-code`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email,
-      code,
-    }),
-  });
+  const isVerified = await verifyEmailCodeRequest(email, code);
 
-  if (!response.ok) {
+  if (!isVerified) {
     redirect(`/verify-email?email=${encodeURIComponent(email)}&error=1`);
   }
 

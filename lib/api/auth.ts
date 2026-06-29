@@ -72,3 +72,15 @@ export async function registerUser(email: string, password: string) {
     error: data?.error as string | undefined,
   };
 }
+
+export async function verifyEmailCodeRequest(email: string, code: string) {
+  const response = await apiFetch("/api/auth/verify-email-code", {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      code,
+    }),
+  });
+
+  return response.ok;
+}
