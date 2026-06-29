@@ -69,3 +69,20 @@ export async function createAssistant(input: CreateAssistantInput) {
     data,
   };
 }
+
+export async function deleteAssistant(id: number) {
+  const response = await apiFetch(`/api/assistants/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    return {
+      success: false as const,
+      status: response.status,
+    };
+  }
+
+  return {
+    success: true as const,
+  };
+}

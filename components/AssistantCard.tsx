@@ -4,12 +4,14 @@ type AssistantCardProps = {
   id: number;
   title: string;
   description: string;
+  onDelete?: (id: number) => void;
 };
 
 export default function AssistantCard({
   id,
   title,
   description,
+  onDelete,
 }: AssistantCardProps) {
   const initial = title.trim().charAt(0).toUpperCase() || "A";
 
@@ -40,9 +42,24 @@ export default function AssistantCard({
         <span className="text-sm font-semibold text-teal-700">
           Открыть чат
         </span>
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-500 transition group-hover:bg-teal-600 group-hover:text-white">
-          →
-        </span>
+        <div className="flex items-center gap-2">
+          {onDelete && (
+            <button
+              className="rounded-lg border border-red-100 bg-white px-2.5 py-1 text-xs font-semibold text-red-600 transition hover:border-red-200 hover:bg-red-50"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(id);
+              }}
+              type="button"
+            >
+              Удалить
+            </button>
+          )}
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-500 transition group-hover:bg-teal-600 group-hover:text-white">
+            →
+          </span>
+        </div>
       </div>
     </Link>
   );

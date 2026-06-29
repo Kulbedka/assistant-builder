@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import AppHeader from "@/components/AppHeader";
 import AssistantCard from "@/components/AssistantCard";
-import { getAssistants, type Assistant } from "@/lib/api/assistants";
+import {
+  deleteAssistant,
+  getAssistants,
+  type Assistant,
+} from "@/lib/api/assistants";
 
 export default function HomePage() {
   const router = useRouter();
@@ -39,6 +43,36 @@ export default function HomePage() {
 
     loadAssistants();
   }, [router]);
+
+  async function handleDeleteAssistant(id: number) {
+    const shouldDelete = window.confirm("Удалить ассистента?");
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setError("");
+
+    try {
+      const result = await deleteAssistant(id);
+
+      if (!result.success) {
+        if (result.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        setError("Не удалось удалить ассистента");
+        return;
+      }
+
+      setAssistants((currentAssistants) =>
+        currentAssistants.filter((assistant) => assistant.id !== id),
+      );
+    } catch {
+      setError("Не удалось удалить ассистента");
+    }
+  }
 
   return (
     <AuthGuard>
@@ -123,6 +157,7 @@ export default function HomePage() {
                     id={assistant.id}
                     title={assistant.name}
                     description={assistant.instruction}
+                    onDelete={handleDeleteAssistant}
                   />
                 ))}
               </div>
